@@ -1,24 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
 import './App.css';
-
+import { db } from './firebase';
+import Navbar from './Navbar';
+import Post from './Post/Post';
+type Posts = {
+  imageUrl: string;
+  userName: string;
+  caption: string;
+  id: string;
+}[];
+type PostType = {
+  imageUrl: string;
+  userName: string;
+  caption: string;
+  id: string;
+};
 function App() {
+  const [posts, setPosts] = useState<Posts>([]);
+  useEffect(() => {
+    db.collection('posts').onSnapshot((snapshot) => {
+      setPosts(
+        snapshot.docs.map((doc) => {
+          return { ...doc.data(), id: doc.id } as PostType;
+        })
+      );
+    });
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <Navbar />
+      {posts.map(({ id, imageUrl, userName, caption }) => (
+        <Post
+          key={id}
+          imageUrl={imageUrl}
+          userName={userName}
+          caption={caption}
+        />
+      ))}
     </div>
   );
 }
